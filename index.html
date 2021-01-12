@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+
+        <title>WebGL Starter</title>
+        
+        <style>
+        
+            .webgl-scene {
+                position: relative;
+                width: 100vw;
+                height: 100vh;
+                background-color: #FFF;
+                overflow: hidden;
+            }
+            
+        </style>
+    </head>
+    <body>
+        <div class="webgl-scene">
+            
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+        <script src="src/js/three.min.js"></script>
+        <script src="src/js/MTLLoader.js"></script>
+        <script src="src/js/OBJLoader.js"></script>
+        <script src="src/js/OrbitControls.js"></script>
+        <script>
+            
+            // Scene & Renderer
+            const scene = new THREE.Scene();
+			const renderer = new THREE.WebGLRenderer({ alpha: true });
+            const sceneLocation = document.querySelector('.webgl-scene');
+            
+            let sceneWidth = sceneLocation.offsetWidth;
+            let sceneHeight = sceneLocation.offsetHeight;
+            
+			renderer.setSize(sceneWidth, sceneHeight);
+			sceneLocation.appendChild(renderer.domElement);
+            
+            
+            
+            // Camera
+            const camera = new THREE.PerspectiveCamera(
+                75, // FOV
+                sceneWidth / sceneHeight, // aspect ratio
+                0.1, // near
+                1000 // far
+            );
+            
+            camera.position.set(0, 0, 5);
+            
+            
+            
+            // OrbitControls - lets you spin the scene around
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            
+            controls.enabled = true;
+            
+            
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x333333);
+            const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 1);
+            
+            directionalLight.position.set(0, 0, 10);
+            directionalLight.castShadow = false;
+            
+            scene.add(ambientLight);
+            scene.add(directionalLight);
+            
+            // Light helpers
+            const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 1, 0xff0000);
+//            scene.add(directionalLightHelper);
+            
+            
+            
+            // Create a basic object & add to scene
+            const cubeGeometry = new THREE.BoxGeometry();
+			const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000 });
+			const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+            
+            cube.position.set(1.5, 0, 0);
+            
+			scene.add(cube);
+            
+            
+            
+            // Load an object & add to scene
+            let candyCane = null;
+            let mtlLoader = new THREE.MTLLoader();
+            
+            mtlLoader.load('/src/objects/candy_cane/275_Candy_Cane.mtl', function(materials) {
+
+                materials.preload();
+
+                let objLoader = new THREE.OBJLoader();
+
+                objLoader.setMaterials(materials);
+                objLoader.load('/src/objects/candy_cane/275_Candy_Cane.obj', function(object) {
+                    
+                    candyCane = object;
+                    
+                    candyCane.scale.set(0.05, 0.05, 0.05);
+                    candyCane.position.set(-1.5, -1, 0);
+
+                    scene.add(candyCane);
+                    
+                });
+            });
+            
+            
+            
+            // Basic object animations
+            function render() {
+                requestAnimationFrame(render);
+                
+                // animation code here
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+                
+                if (candyCane) candyCane.rotation.y += 0.01;
+                
+                renderer.render(scene, camera);
+            }
+            
+            render();
+            
+        </script>
+    </body>
+</html>
